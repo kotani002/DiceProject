@@ -1,29 +1,22 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using DiceName;
 using Cysharp.Threading.Tasks;
+using LittleEmperor.TurnStateName.Enums;
 
 public class DiceManager : SingletonMonoBehaviour<DiceManager>
 {
     [SerializeField]
-    private List<BaseDice> RollDiceList = new List<BaseDice>();
+    private List<BaseDice> _rollDiceList = new List<BaseDice>();
+    public List<BaseDice> RollDiceList => _rollDiceList;
     [SerializeField]
-    private List<BaseDice> StockDiceList = new List<BaseDice>();
+    private List<BaseDice> _stockDiceList = new List<BaseDice>();
+    private List<BaseDice> StockDiceList => _stockDiceList;
 
     private E_AnimationType e_AnimationType = default;
-
-    //全てのサイコロを一括で振る
-    void Start()
-    {
-
-    }
-
-    void Update()
-    {
-
-    }
 
     //全てのサイコロを一括で振る
     public async void RollAllDice()
@@ -32,11 +25,6 @@ public class DiceManager : SingletonMonoBehaviour<DiceManager>
         int totalScore = 0;
         e_AnimationType = E_AnimationType.Roll;
 
-        if (RollDiceList.Count == 0)
-        {
-            return;
-        }
-
         RollDiceList.ForEach(async obj =>
         {
             await obj.Roll();
@@ -44,12 +32,19 @@ public class DiceManager : SingletonMonoBehaviour<DiceManager>
             i++;
         });
 
-        // TODO:ForEachはUniTaskで待てたはず...
-        await UniTask.WaitUntil(() => i >= RollDiceList.Count);
-        Debug.Log($"ダイスの合計値は {totalScore} !");
+        // 全てのダイスが停止したらStateを変更する
+
+        if (RollDiceList.Count != 0)
+        {
+            await UniTask.WaitUntil(() => i >= RollDiceList.Count);
+            Debug.Log($"ダイスの合計値は {totalScore} !");
+            StageDataManager.Instance.GameTotalScore += totalScore;
+            DiceGameManager.Instance.StateDiceChange(InGameTurnState.Result);
+            return;
+        }
     }
     //全てのサイコロを一括で止める
-    public void StopAllDice()
+    public async void StopAllDice()
     {
         RollDiceList.ForEach(async obj =>
         {

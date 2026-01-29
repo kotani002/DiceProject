@@ -11,5 +11,6 @@ namespace LittleEmperor.StageData
         public int ClearScore;
         public int MaxRollDice;
         public int MaxTurn;
+        public int ProgressTurn;
     }
 }

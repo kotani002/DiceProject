@@ -6,19 +6,22 @@ using System;
 using DG.Tweening;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using UnityEngine.EventSystems;
 
-public class BaseDice : MonoBehaviour
+public class BaseDice : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     private int _value = 0;
     private int _score = 0;
-    private static int LOW = 0;
-    private static int MAX = 6;
+    public int Min = 0;
+    public int Max = 6;
 
     [SerializeField]
     private List<Vector3> _diceVector = new List<Vector3>();
 
     public E_DiceType DiceType;
     private E_AnimationType e_AnimationType = default;
+
+    private bool moveDice = false;
 
     private void Awake()
     {
@@ -29,21 +32,21 @@ public class BaseDice : MonoBehaviour
     public async Task Roll()
     {
         //均等なダイス(1から6までの間で生成)
-        int value = UnityEngine.Random.Range(LOW, MAX);
+        int value = UnityEngine.Random.Range(0, 6);
         //角度設定
         Quaternion Quo = Quaternion.Euler(_diceVector[value]);
         //Animation再生
         await RollAnimation();
-        //0.5秒間ランダム回転+振動
+        //ランダム回転+振動
         await this.transform.DORotateQuaternion(Quo, 0.1f);
         Lottery(value);
         //現在の位置から指定の角度に変更
-        Debug.Log(GetScore());
     }
 
-    public void RollStop()
+    public async void RollStop()
     {
         e_AnimationType = E_AnimationType.Stop;
+        await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
     }
 
     //Rollアニメーション
@@ -61,6 +64,13 @@ public class BaseDice : MonoBehaviour
         {
             //ダイスをランダムに回す
             RandomRollAnimation();
+        }
+
+        if (moveDice)
+        {
+            var vec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            vec.z = 0.9f;
+            this.transform.position = vec;
         }
     }
 
@@ -83,5 +93,18 @@ public class BaseDice : MonoBehaviour
     public void SetScore(int value)
     {
         _score = value;
+    }
+
+    //ポインターに追従する
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        moveDice = true;
+    }
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        var vec = this.transform.position;
+        vec.z = 1f;
+        this.transform.position = vec;
+        moveDice = false;
     }
 }

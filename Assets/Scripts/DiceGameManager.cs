@@ -13,37 +13,13 @@ public class DiceGameManager : SingletonMonoBehaviour<DiceGameManager>
     // 3.抽選が始まるまで待機
     // 4.抽選が終わったら、リザルト表示
     // 5.ターン終了処理
+    [SerializeField]
     private InGameTurnState nowState = InGameTurnState.SetUp;
-
-    Vector2 test = new Vector2();
-
-    private Vector3 _nowMousePosi = new Vector3(0,0,100); // 現在のマウスのワールド座標
-
-    // Stateパターンの練習
-    // Stateが切り替わるまでwaitで待機する形式でターン処理を進める
-    void Update()
-    {
-        if (Input.GetMouseButton(0))
-        {
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            //RaycastHit hit;
-            if (Physics.Raycast(ray, out var hit, Mathf.Infinity))
-            {
-                if (hit.collider.tag == "Dice")
-                {
-                    var vec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                    vec.z = 1f;
-                    // 現在のマウスのワールド座標を更新
-                    hit.collider.gameObject.transform.position = vec;
-                }
-            }
-        }
-    }
 
     public async void DiceGame()
     {
         // セットアップ終了(Start)まで待機
+        await SetUp();
         // 目標値の表示とターン数の表示
         await UniTask.WaitUntil(() => nowState == InGameTurnState.Start);
 
@@ -52,11 +28,70 @@ public class DiceGameManager : SingletonMonoBehaviour<DiceGameManager>
 
         // リザルト終了まで表示
         await UniTask.WaitUntil(() => nowState == InGameTurnState.Result);
+
+        StageDataManager.Instance.TotalScoreAnimation();
+
+        //経過ターン数が指定の値を超えた場合
+        if(StageDataManager.Instance.ProgressTurnOverCheck())
+        {
+            //敗北処理
+        }else
+        {
+            //トータルスコアが目標値を超えたか確認
+            if(StageDataManager.Instance.GameTotalScore >= StageDataManager.Instance.NowStageData.ClearScore)
+            {
+                //ステージクリアリザルトへ
+            }
+
+            //超えていない場合は次のターンに進行
+            DiceGameLoop();
+            nowState = InGameTurnState.DiceSelect;
+        }
+    }
+
+    public async void DiceGameLoop()
+    {
+        // DiceSelectまで待機
+        await UniTask.WaitUntil(() => nowState == InGameTurnState.DiceSelect);
+
+        // リザルト終了まで表示
+        await UniTask.WaitUntil(() => nowState == InGameTurnState.Result);
+        
+        StageDataManager.Instance.TotalScoreAnimation();
+
+        //経過ターン数が指定の値を超えた場合
+        if(StageDataManager.Instance.ProgressTurnOverCheck())
+        {
+            //敗北処理
+        }else
+        {
+            //トータルスコアが目標値を超えたか確認
+            if(StageDataManager.Instance.GameTotalScore >= StageDataManager.Instance.NowStageData.ClearScore)
+            {
+                //ステージクリアリザルトへ
+            }
+
+            //超えていない場合は次のターンに進行
+            DiceGameLoop();
+            nowState = InGameTurnState.DiceSelect;
+        }
     }
 
     public void StateDiceSelectChange()
     {
         nowState = InGameTurnState.DiceSelect;
+    }
+
+    public void StateDiceChange(InGameTurnState inGameTurnState)
+    {
+        nowState = inGameTurnState;
+    }
+
+    //ステージのデータをViewに反映させる
+    private async UniTask SetUp()
+    {
+        await StageDataManager.Instance.SetUp();
+        nowState = InGameTurnState.Start;
     }
 
 }

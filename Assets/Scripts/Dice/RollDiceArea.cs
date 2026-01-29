@@ -12,5 +12,7 @@ public class RollDiceArea : MonoBehaviour
             return;
         }
         DiceManager.Instance.SelectRollDice(dice);
+
+        StageDataManager.Instance.StatusUpdate();
     }
 }

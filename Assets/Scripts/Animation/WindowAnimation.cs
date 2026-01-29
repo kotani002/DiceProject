@@ -17,15 +17,15 @@ public class WindowAnimation
         bg.gameObject.SetActive(true);
         window.SetActive(true);
 
-        bg.DOFade(endValue: 0.8f, duration: 0.75f).SetEase(Ease.InCubic);
-        await window.transform.DOLocalMove(new Vector2(0f, 0f), 0.75f).SetEase(Ease.OutBounce);
+        await bg.DOFade(endValue: 0.8f, duration: 0.3f).SetEase(Ease.InCubic);
+        await window.transform.DOLocalMove(new Vector2(0f, 0f), 1f).SetEase(Ease.OutBounce);
     }
 
     // 看板を上げる
     public async UniTask WindowShowUp()
     {
-        bg.DOFade(endValue: 0f, duration: 0.75f).SetEase(Ease.InCubic);
-        await window.transform.DOLocalMove(new Vector2(0f, 1200f), 0.75f).SetEase(Ease.InCubic);
+        bg.DOFade(endValue: 0f, duration: 0.3f).SetEase(Ease.InCubic);
+        await window.transform.DOLocalMove(new Vector2(0f, 1200f), 0.3f).SetEase(Ease.InCubic);
         bg.gameObject.SetActive(false);
         window.SetActive(false);
     }

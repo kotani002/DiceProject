@@ -68,6 +68,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     public void ChangeStage1State()
     {
         gamePrefabState = GamePrefabState.MainGame;
+        StageDataManager.Instance.SetNowStageData(0);
     }
 
     private void PrefabsSetActive(GamePrefabs prefabs, bool flag)

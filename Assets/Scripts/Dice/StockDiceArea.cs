@@ -12,5 +12,7 @@ public class StockDiceArea : MonoBehaviour
             return;
         }
         DiceManager.Instance.SelectOutRollDice(dice);
+
+        StageDataManager.Instance.StatusUpdate();
     }
 }
